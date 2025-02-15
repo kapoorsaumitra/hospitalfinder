@@ -1,16 +1,17 @@
 import React from "react";
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 
 const HospitalList = ({ hospitals }) => {
-  const [error, setError] = useState(null)
+  const [error, setError] = useState(null);
+  const [hoveredId, setHoveredId] = useState(null);
 
   useEffect(() => {
     if (!hospitals || !Array.isArray(hospitals)) {
-      setError("Invalid hospital data.")
+      setError("Invalid hospital data.");
     }
-  }, [hospitals])
+  }, [hospitals]);
 
-  if (error) return <p className="text-red-500 text-center">{error}</p>
+  if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
@@ -21,18 +22,55 @@ const HospitalList = ({ hospitals }) => {
         <ul className="space-y-4">
           {hospitals.map((hospital, index) => (
             <li
-              key={index}
-              className="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+              key={hospital.place_id || index}
+              className={`bg-gray-50 rounded-lg p-4 transform transition-all duration-200 ease-in-out cursor-pointer
+                ${
+                  hoveredId === hospital.place_id
+                    ? "shadow-lg scale-102 bg-blue-50"
+                    : "shadow-sm hover:shadow-md"
+                }`}
+              onMouseEnter={() => setHoveredId(hospital.place_id)}
+              onMouseLeave={() => setHoveredId(null)}
             >
-              <h3 className="text-lg font-semibold text-gray-800">{hospital.name}</h3>
-              <p className="text-sm text-gray-600">{hospital.vicinity}</p>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                    {hospital.name}
+                  </h3>
+                  <p className="text-sm text-gray-600">{hospital.vicinity}</p>
+                </div>
+                {hospital.rating && (
+                  <div className="flex items-center bg-white px-2 py-1 rounded-full shadow-sm">
+                    <span className="text-yellow-500 mr-1">★</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      {hospital.rating.toFixed(1)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              <div className={`mt-3 grid grid-cols-2 gap-2 overflow-hidden transition-all duration-200
+                ${hoveredId === hospital.place_id ? "max-h-24 opacity-100" : "max-h-0 opacity-0"}`}>
+                {hospital.opening_hours && (
+                  <div className="text-sm text-gray-600">
+                    <span className={`inline-block w-3 h-3 rounded-full mr-2 ${
+                      hospital.opening_hours.open_now ? "bg-green-500" : "bg-red-500"
+                    }`}></span>
+                    {hospital.opening_hours.open_now ? "Open Now" : "Closed"}
+                  </div>
+                )}
+                {hospital.user_ratings_total && (
+                  <div className="text-sm text-gray-600">
+                    {hospital.user_ratings_total} reviews
+                  </div>
+                )}
+              </div>
             </li>
           ))}
         </ul>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default HospitalList
-
+export default HospitalList;
