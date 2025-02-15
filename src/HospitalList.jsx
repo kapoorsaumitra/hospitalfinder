@@ -1,5 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { MapPin } from "lucide-react";
 
 const HospitalList = ({ hospitals }) => {
   const [error, setError] = useState(null);
@@ -10,6 +11,18 @@ const HospitalList = ({ hospitals }) => {
       setError("Invalid hospital data.");
     }
   }, [hospitals]);
+
+  const handleNavigation = (hospital) => {
+    // Get the hospital's coordinates
+    const lat = hospital.geometry.location.lat();
+    const lng = hospital.geometry.location.lng();
+    
+    // Create Google Maps URL for navigation
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+    
+    // Open in a new tab
+    window.open(mapsUrl, '_blank');
+  };
 
   if (error) return <p className="text-red-500 text-center">{error}</p>;
 
@@ -23,20 +36,24 @@ const HospitalList = ({ hospitals }) => {
           {hospitals.map((hospital, index) => (
             <li
               key={hospital.place_id || index}
-              className={`bg-gray-50 rounded-lg p-4 transform transition-all duration-200 ease-in-out cursor-pointer
+              className={`bg-gray-50 rounded-lg p-4 transform transition-all duration-100 ease-in-out border border-slate-300 cursor-pointer
                 ${
                   hoveredId === hospital.place_id
-                    ? "shadow-lg scale-102 bg-blue-50"
+                    ? "shadow-lg scale-102 hover:bg-blue-100"
                     : "shadow-sm hover:shadow-md"
                 }`}
               onMouseEnter={() => setHoveredId(hospital.place_id)}
               onMouseLeave={() => setHoveredId(null)}
+              onClick={() => handleNavigation(hospital)}
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                    {hospital.name}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                      {hospital.name}
+                    </h3>
+                    <MapPin className="w-4 h-4 text-blue-500" />
+                  </div>
                   <p className="text-sm text-gray-600">{hospital.vicinity}</p>
                 </div>
                 {hospital.rating && (
@@ -64,6 +81,9 @@ const HospitalList = ({ hospitals }) => {
                     {hospital.user_ratings_total} reviews
                   </div>
                 )}
+                <div className="text-sm text-blue-600 col-span-2">
+                  Get directions ➤
+                </div>
               </div>
             </li>
           ))}
